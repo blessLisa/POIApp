@@ -13,6 +13,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import java.util.ArrayList;
+//git 생성
 
 public class CategorizedActivity extends AppCompatActivity implements OnMapReadyCallback{
 
