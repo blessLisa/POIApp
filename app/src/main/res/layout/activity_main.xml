@@ -4,19 +4,39 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="com.example.whkang.poiapp.MainActivity">
 
-    <Button
-        android:id="@+id/gasStation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Button"
-        tools:layout_constraintTop_creator="1"
-        android:layout_marginStart="50dp"
-        android:layout_marginTop="81dp"
-        tools:layout_constraintLeft_creator="1"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginLeft="50dp" />
 
+    <Button
+        android:id="@+id/gas_button"
+        android:layout_width="124dp"
+        android:layout_height="79dp"
+        android:text="GAS STATION"
+        tools:layout_editor_absoluteY="39dp"
+        tools:layout_editor_absoluteX="38dp" />
+
+    <Button
+        android:id="@+id/hos_button"
+        android:layout_width="122dp"
+        android:layout_height="83dp"
+        android:text="HOSPITAL"
+        tools:layout_editor_absoluteY="173dp"
+        tools:layout_editor_absoluteX="38dp" />
+
+    <Button
+        android:id="@+id/res_button"
+        android:layout_width="99dp"
+        android:layout_height="79dp"
+        android:text="RESTAURANT"
+        tools:layout_editor_absoluteY="39dp"
+        tools:layout_editor_absoluteX="219dp" />
+
+    <Button
+        android:id="@+id/par_button"
+        android:layout_width="106dp"
+        android:layout_height="77dp"
+        android:text="PARKING"
+        tools:layout_editor_absoluteY="173dp"
+        tools:layout_editor_absoluteX="219dp" />
 </android.support.constraint.ConstraintLayout>

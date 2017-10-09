@@ -30,7 +30,6 @@ import java.util.List;
 
 import noman.googleplaces.NRPlaces;
 import noman.googleplaces.Place;
-import noman.googleplaces.PlaceType;
 import noman.googleplaces.PlacesException;
 import noman.googleplaces.PlacesListener;
 //git 생성
@@ -54,6 +53,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     boolean mRequestingLocationUpdates = false;
     boolean mMoveMapByUser = true;
     boolean mMoveMapByAPI = true;
+    String mType = null;
 
 
     LocationRequest locationRequest = new LocationRequest()
@@ -61,15 +61,25 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
             .setInterval(UPDATE_INTERVAL_MS)
             .setFastestInterval(FASTEST_UPDATE_INTERVAL_MS);
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d("lisa", "onCreate");
         super.onCreate(savedInstanceState);
+
+        if (savedInstanceState == null) {
+            Bundle extras = getIntent().getExtras();
+            if(extras == null) {
+                mType= null;
+            } else {
+                mType= extras.getString("TYPE");
+            }
+        }
         setContentView(R.layout.activity_categorized);
 
-        ListView listview = (ListView)findViewById(R.id.listView);
-
-        ArrayList<ListViewItem> listItem = new ArrayList<ListViewItem>();
+//        ListView listview = (ListView)findViewById(R.id.listView);
+//
+//        ArrayList<ListViewItem> listItem = new ArrayList<ListViewItem>();
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -84,10 +94,10 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
 
         mActivity = this;
 
-        ListViewItem item1 = new ListViewItem(R.drawable.mario, "Mario_icon", "Korea");     //make item
-        listItem.add(item1);
-        ListViewAdapter viewAdapter = new ListViewAdapter(this, R.layout.listview_item, listItem);
-        listview.setAdapter(viewAdapter);
+//        ListViewItem item1 = new ListViewItem(R.drawable.mario, "Mario_icon", "Korea");     //make item
+//        listItem.add(item1);
+//        ListViewAdapter viewAdapter = new ListViewAdapter(this, R.layout.listview_item, listItem);
+//        listview.setAdapter(viewAdapter);
 
         previous_marker = new ArrayList<Marker>();
 
@@ -181,6 +191,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
 
             mGoogleApiClient.disconnect();
         }
+        previous_marker.clear();
         super.onStop();
     }
 
@@ -254,9 +265,14 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     @Override
     public void onPlacesSuccess(final List<Place> places) {
         Log.d("lisa", "onPlcaesSuccess");
+
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                ListView listview = (ListView)findViewById(R.id.listView);
+
+                ArrayList<ListViewItem> listItem = new ArrayList<ListViewItem>();
                 for (noman.googleplaces.Place place : places) {
 
                     LatLng latLng
@@ -267,8 +283,13 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
                     markerOptions.position(latLng);
                     markerOptions.title(place.getName());
                     markerOptions.snippet(place.getVicinity());
+                    Log.d("lisa",place.getIcon());
                     Marker item = mGoogleMap.addMarker(markerOptions);
                     previous_marker.add(item);
+
+
+                    ListViewItem L_item = new ListViewItem(place.getIcon(), place.getName(), place.getVicinity());     //make item
+                    listItem.add(L_item);
 
                 }
 
@@ -277,6 +298,9 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
                 hashSet.addAll(previous_marker);
                 previous_marker.clear();
                 previous_marker.addAll(hashSet);
+
+                ListViewAdapter viewAdapter = new ListViewAdapter(mActivity, R.layout.listview_item, listItem);
+                listview.setAdapter(viewAdapter);
 
             }
         });
@@ -299,7 +323,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
                 .key("AIzaSyCKbcKKTlGC0tZxHM2AFkmtAd6RUeg7bwo")
                 .latlng(location.latitude, location.longitude)//현재 위치
                 .radius(500) //500 미터 내에서 검색
-                .type(PlaceType.RESTAURANT) //음식점
+                .type(mType) //음식점
                 .build()
                 .execute();
     }

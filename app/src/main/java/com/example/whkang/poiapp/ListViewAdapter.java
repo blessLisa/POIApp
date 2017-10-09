@@ -47,10 +47,12 @@ public class ListViewAdapter extends BaseAdapter {
         ListViewItem listViewItem=item.get(position);
 
         ImageView thumbnail = (ImageView)convertView.findViewById(R.id.imageview1);
-        thumbnail.setImageResource(listViewItem.getThumbnail());
+        if(listViewItem.getThumbnail()!=null) {
+            thumbnail.setImageBitmap(listViewItem.getThumbnail());
+        }
         TextView name = (TextView)convertView.findViewById(R.id.textview1);
         name.setText(listViewItem.getName());
-        TextView address = (TextView)convertView.findViewById(R.id.textview1);
+        TextView address = (TextView)convertView.findViewById(R.id.textview2);
         address.setText(listViewItem.getAddress());
 
         return convertView;

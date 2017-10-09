@@ -24,14 +24,49 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button gas_button = (Button)findViewById(R.id.gasStation);
+        Button gas_button = (Button)findViewById(R.id.gas_button);
+        Button res_button = (Button)findViewById(R.id.res_button);
+        Button hos_button= (Button)findViewById(R.id.hos_button);
+        Button par_button = (Button)findViewById(R.id.par_button);
+
         gas_button.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
+                String type = "gas_station";
                 Intent intent = new Intent(getApplicationContext(), CategorizedActivity.class);
+                intent.putExtra("TYPE", type);
                 startActivity(intent);
             }
         });
+
+        res_button.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                String type = "restaurant";
+                Intent intent = new Intent(getApplicationContext(), CategorizedActivity.class);
+                intent.putExtra("TYPE", type);
+                startActivity(intent);
+            }
+        });
+        hos_button.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                String type = "hospital";
+                Intent intent = new Intent(getApplicationContext(), CategorizedActivity.class);
+                intent.putExtra("TYPE", type);
+                startActivity(intent);
+            }
+        });
+        par_button.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                String type = "parking";
+                Intent intent = new Intent(getApplicationContext(), CategorizedActivity.class);
+                intent.putExtra("TYPE", type);
+                startActivity(intent);
+            }
+        });
+
         mActivity = this;
 
 //        checkPermissions();
