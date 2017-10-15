@@ -25,6 +25,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -56,12 +59,17 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     boolean mMoveMapByAPI = true;
     String mType = null;
 
+    //Google Place URL API
+//    String jsonUrl = "https://maps.googleapis.com/maps/api/place/radarsearch/json?location=51.503186,-0.126446&radius=5000&type=museum&key=YOUR_API_KEY";
+    String jsonUrl = "https://maps.googleapis.com/maps/api/place/radarsearch/json?location="+mCurrentPosition.latitude+","+mCurrentPosition.longitude+"%radius=5000&type="+mType+"&key=AIzaSyB6F0yi1E2MZWBAlqeM2hRLlDczEAkBmOg";
 
     LocationRequest locationRequest = new LocationRequest()
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
             .setInterval(UPDATE_INTERVAL_MS)
             .setFastestInterval(FASTEST_UPDATE_INTERVAL_MS);
 
+    JSONArray mJsonArray;
+    JSONObject mJsonObject;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,17 +78,14 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
 
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
-            if(extras == null) {
-                mType= null;
+            if (extras == null) {
+                mType = null;
             } else {
-                mType= extras.getString("TYPE");
+                mType = extras.getString("TYPE");
             }
+
         }
         setContentView(R.layout.activity_categorized);
-
-//        ListView listview = (ListView)findViewById(R.id.listView);
-//
-//        ArrayList<ListViewItem> listItem = new ArrayList<ListViewItem>();
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -89,20 +94,22 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
                 .build();
 
         FragmentManager fragmentManager = getFragmentManager();
-        MapFragment mapFragment = (MapFragment)fragmentManager
+        MapFragment mapFragment = (MapFragment) fragmentManager
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         MapsInitializer.initialize(getApplicationContext());
         mActivity = this;
-
         previous_marker = new ArrayList<Marker>();
 
-
+        makeJsonData();
 
     }
 
-
+    private void makeJsonData()
+    {
+//        JSON
+    }
     @Override
     public void onMapReady(final GoogleMap map) {
         Log.d("lisa", "onMapReady");
@@ -149,7 +156,6 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
 
     @Override
     public boolean onMyLocationButtonClick(){
-
         return true;
     }
 
