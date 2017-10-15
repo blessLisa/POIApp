@@ -96,11 +96,6 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
         MapsInitializer.initialize(getApplicationContext());
         mActivity = this;
 
-//        ListViewItem item1 = new ListViewItem(R.drawable.mario, "Mario_icon", "Korea");     //make item
-//        listItem.add(item1);
-//        ListViewAdapter viewAdapter = new ListViewAdapter(this, R.layout.listview_item, listItem);
-//        listview.setAdapter(viewAdapter);
-
         previous_marker = new ArrayList<Marker>();
 
 
