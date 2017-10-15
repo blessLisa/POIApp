@@ -18,6 +18,7 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -92,6 +93,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        MapsInitializer.initialize(getApplicationContext());
         mActivity = this;
 
 //        ListViewItem item1 = new ListViewItem(R.drawable.mario, "Mario_icon", "Korea");     //make item
