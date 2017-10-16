@@ -68,8 +68,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mActivity = this;
-
-//        checkPermissions();
     }
 
 

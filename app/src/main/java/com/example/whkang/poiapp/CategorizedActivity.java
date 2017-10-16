@@ -3,6 +3,7 @@ package com.example.whkang.poiapp;
 
 import android.app.FragmentManager;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -26,8 +27,15 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -59,17 +67,19 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     boolean mMoveMapByAPI = true;
     String mType = null;
 
+    //디폴트 위치, Seoul
+    LatLng DEFAULT_LOCATION = new LatLng(37.56, 126.97);
+
     //Google Place URL API
-//    String jsonUrl = "https://maps.googleapis.com/maps/api/place/radarsearch/json?location=51.503186,-0.126446&radius=5000&type=museum&key=YOUR_API_KEY";
-    String jsonUrl = "https://maps.googleapis.com/maps/api/place/radarsearch/json?location="+mCurrentPosition.latitude+","+mCurrentPosition.longitude+"%radius=5000&type="+mType+"&key=AIzaSyB6F0yi1E2MZWBAlqeM2hRLlDczEAkBmOg";
+    String jsonUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=";
 
     LocationRequest locationRequest = new LocationRequest()
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
             .setInterval(UPDATE_INTERVAL_MS)
             .setFastestInterval(FASTEST_UPDATE_INTERVAL_MS);
 
-    JSONArray mJsonArray;
-    JSONObject mJsonObject;
+    JSONArray mJsonArray = new JSONArray();
+    JSONObject mJsonObject = new JSONObject();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,8 +93,8 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
             } else {
                 mType = extras.getString("TYPE");
             }
-
         }
+
         setContentView(R.layout.activity_categorized);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -98,23 +108,104 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        MapsInitializer.initialize(getApplicationContext());
+        mCurrentPosition = DEFAULT_LOCATION;
         mActivity = this;
         previous_marker = new ArrayList<Marker>();
 
-        makeJsonData();
+        jsonUrl = jsonUrl+mCurrentPosition.latitude+","+mCurrentPosition.longitude+"&radius=5000&type="+mType+"&key=AIzaSyB6F0yi1E2MZWBAlqeM2hRLlDczEAkBmOg";
+
+        makeJsonData(jsonUrl);
+
 
     }
 
-    private void makeJsonData()
+    private void makeJsonData(final String url)
     {
 //        JSON
+        URL AsyUrl=null;
+        new AsyncTask<String, String, JSONObject>() {
+            @Override
+            protected JSONObject doInBackground(String... params) {
+
+                HttpURLConnection connection = null;
+                BufferedReader reader = null;
+
+                try {
+                    URL url = new URL(params[0]);
+                    connection = (HttpURLConnection) url.openConnection();
+                    connection.connect();
+
+                    InputStream stream = connection.getInputStream();
+
+                    reader = new BufferedReader(new InputStreamReader(stream));
+
+                    StringBuffer buffer = new StringBuffer();
+                    String line = "";
+
+                    while ((line = reader.readLine()) != null) {
+                        buffer.append(line);
+                    }
+                    return new JSONObject(buffer.toString());
+                }
+
+                catch(Exception ex)
+                {
+                    Log.e("App", "yourDataTask", ex);
+                    return null;
+                }
+                finally
+                {
+                    if(reader != null)
+                    {
+                        try {
+                            reader.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+
+            @Override
+            protected void onPostExecute(JSONObject response)
+            {
+                if(response != null)
+                {
+                    try {
+                        mJsonObject = response;
+                        getPOIPhotos(mJsonObject);
+                        Log.e("App", "Success: " + response.getString("yourJsonElement") );
+                    } catch (JSONException ex) {
+                        Log.e("App", "Failure", ex);
+                    }
+                }
+            }
+        }.execute(url);
     }
+
+    private  void getPOIPhotos(JSONObject jsonObject)
+    {
+        JSONArray photos = null;
+        try {
+            JSONArray results = jsonObject.getJSONArray("results");    //result 가져오기
+            for(int i=0; i<results.length(); i++) {
+                photos = results.getJSONObject(i).getJSONArray("photos");
+                if (photos == null)
+            Log.d("lisa", photos.toString());
+            }
+
+        }
+        catch (JSONException e){
+            Log.e("lisa", e.toString());
+        }
+//https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=CnRtAAAATLZNl354RwP_9UKbQ_5Psy40texXePv4oAlgP4qNEkdIrkyse7rPXYGd9D_Uj1rVsQdWT4oRz4QrYAJNpFX7rzqqMlZw2h2E2y5IKMUZ7ouD_SlcHxYq1yL4KbKUv3qtWgTK0A6QbGh87GB3sscrHRIQiG2RrmU_jF4tENr9wGS_YxoUSSDrYjWmrNfeEHSGSc3FyhNLlBU&key=YOUR_API_KEY
+    }
+
     @Override
     public void onMapReady(final GoogleMap map) {
         Log.d("lisa", "onMapReady");
         mGoogleMap = map;
-
+        MapsInitializer.initialize(getApplicationContext());
         setDefaultLocation();
 
         mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
@@ -151,6 +242,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
             public void onCameraMove() {
             }
         });
+
 
     }
 
@@ -212,26 +304,24 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.d("lisa", "onConnectionFailed");
-        Toast.makeText(getApplicationContext(), "connection faild",Toast.LENGTH_SHORT).show();
-        setDefaultLocation();
+        Toast.makeText(getApplicationContext(), "connection failed",Toast.LENGTH_SHORT).show();
     }
 
 
     @Override
     public void onConnectionSuspended(int cause) {
         Log.d("lisa", "onConnectionSuspended");
-        Toast.makeText(getApplicationContext(), "cionnection suspend",Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "connection suspend",Toast.LENGTH_SHORT).show();
 
     }
 
 
 
     public void setDefaultLocation() {
-        Log.d("lisa", "setDafaultLocation");
+        MapsInitializer.initialize(getApplicationContext());
+        Log.d("lisa", "setDefaultLocation");
         mMoveMapByUser = false;
 
-        //디폴트 위치, Seoul
-        LatLng DEFAULT_LOCATION = new LatLng(37.56, 126.97);
         mCurrentPosition = DEFAULT_LOCATION;
         String markerTitle = "위치정보 가져올 수 없음";
         String markerSnippet = "위치 퍼미션과 GPS 활성 요부 확인하세요";
@@ -267,7 +357,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
 
     @Override
     public void onPlacesSuccess(final List<Place> places) {
-        Log.d("lisa", "onPlcaesSuccess");
+        Log.d("lisa", "onPlacesSuccess");
 
 
         runOnUiThread(new Runnable() {
