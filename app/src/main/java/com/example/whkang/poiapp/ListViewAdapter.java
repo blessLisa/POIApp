@@ -34,8 +34,8 @@ public class ListViewAdapter extends BaseAdapter {
     }
 
     private void getBitmap(String url) {
-        new AsyncTask<String, Void, Bitmap>() {
 
+        new AsyncTask<String, Void, Bitmap>() {
             @Override
             protected Bitmap doInBackground(String... urls) {
                 URL imgUrl = null;
@@ -43,7 +43,6 @@ public class ListViewAdapter extends BaseAdapter {
                 InputStream is = null;
 
                 Bitmap retBitmap = null;
-
                 try {
                     imgUrl = new URL(urls[0]);
                     connection = (HttpURLConnection) imgUrl.openConnection();
@@ -64,12 +63,12 @@ public class ListViewAdapter extends BaseAdapter {
 
             protected void onPostExecute(Bitmap result) {
                 if (result != null) {
-//                    mBitmap = result;
                     thumbnail.setImageBitmap(result);
                 }
             }
         }.execute(thumurl);
     }
+
     @Override
     public int getCount() {
         return item.size();
@@ -93,8 +92,9 @@ public class ListViewAdapter extends BaseAdapter {
         ListViewItem listViewItem=item.get(position);
 
         thumbnail = (ImageView)convertView.findViewById(R.id.imageview1);
-        thumurl = listViewItem.getThumbnail();
-        getBitmap(thumurl);
+//        thumurl = listViewItem.getThumbnail();
+//        getBitmap(thumurl);
+        thumbnail.setImageBitmap(listViewItem.getmThumbnailBitmap());
 
         TextView name = (TextView)convertView.findViewById(R.id.textview1);
         name.setText(listViewItem.getName());
