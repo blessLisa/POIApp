@@ -54,7 +54,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     ArrayList<String> mName = new ArrayList<String>();
     ArrayList<String> mAddress = new ArrayList<String>();
     ArrayList<JSONObject> mLocation = new ArrayList<JSONObject>();
-    private String API_KEY = "AIzaSyB6F0yi1E2MZWBAlqeM2hRLlDczEAkBmOg";
+    private String API_KEY = "AIzaSyCydQq4bw68-gd2yqr2AeTL5sQlmxqUma8";
     JSONObject mJsonObject = new JSONObject();
 
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 2002;
@@ -66,13 +66,10 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     boolean mMakeJson;
     String mType = null;
 
-
-    //디폴트 위치, Seoul
-    LatLng DEFAULT_LOCATION = new LatLng(37.56, 126.97);
-
     //Google Place URL API
     String DEFAULT_JSON_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?key="+API_KEY+"&radius=5000&location=";
     String mJsonURL;
+
     LocationRequest mLocationRequest = new LocationRequest()
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
             .setInterval(UPDATE_INTERVAL_MS)
@@ -106,7 +103,6 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
         mPlacesMarker = new ArrayList<Marker>();
 
     }
-
 
 
     private void makeJsonData(String url)
@@ -205,9 +201,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(latLng);
         markerOptions.title("Current Position");
-//        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
         mCurrentMarker = mGoogleMap.addMarker(markerOptions);
-
         //move map camera
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
 
@@ -252,9 +246,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
         if (mLocationPermissionGranted) {
-            // Set the map's camera position to the current location of the device.
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-//            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mCurrentPosition, 15));
         }
     }
 
@@ -266,7 +258,6 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
         mLocationPermissionGranted = false;
         switch (requestCode) {
             case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mLocationPermissionGranted = true;
