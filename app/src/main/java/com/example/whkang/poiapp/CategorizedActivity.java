@@ -19,7 +19,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -46,34 +45,34 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     private GoogleMap mGoogleMap;
     private GoogleApiClient mGoogleApiClient = null;
     private Marker mCurrentMarker = null;
-    private Marker mPlacesMarker = null;
+    private ArrayList<Marker> mPlacesMarker = null;
     private AppCompatActivity mActivity;
 
-    LatLng mCurrentPosition;
+    Location mCurrentPosition;
 
-    ArrayList<String> photoRefer = new ArrayList<String>();
-    ArrayList<String> name = new ArrayList<String>();
-    ArrayList<String> address = new ArrayList<String>();
-    ArrayList<JSONObject> location = new ArrayList<JSONObject>();
+    ArrayList<String> mPhotoRefer = new ArrayList<String>();
+    ArrayList<String> mName = new ArrayList<String>();
+    ArrayList<String> mAddress = new ArrayList<String>();
+    ArrayList<JSONObject> mLocation = new ArrayList<JSONObject>();
     private String API_KEY = "AIzaSyB6F0yi1E2MZWBAlqeM2hRLlDczEAkBmOg";
     JSONObject mJsonObject = new JSONObject();
 
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 2002;
-    private static final int UPDATE_INTERVAL_MS = 1000;  // 1초
+    private static final int UPDATE_INTERVAL_MS = 60000;  // 60초
     private static final int FASTEST_UPDATE_INTERVAL_MS = 500; // 0.5초
 
     boolean mLocationPermissionGranted = false;
-    boolean mRequestingLocationUpdates = false;
     boolean mMoveMapByUser = true;
-    boolean mMoveMapByAPI = true;
+    boolean mMakeJson;
     String mType = null;
+
 
     //디폴트 위치, Seoul
     LatLng DEFAULT_LOCATION = new LatLng(37.56, 126.97);
 
     //Google Place URL API
-    String jsonUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=";
-
+    String DEFAULT_JSON_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?key="+API_KEY+"&radius=5000&location=";
+    String mJsonURL;
     LocationRequest mLocationRequest = new LocationRequest()
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
             .setInterval(UPDATE_INTERVAL_MS)
@@ -82,7 +81,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("lisa", "onCreate");
+        Log.d("AppLog", "onCreate");
         super.onCreate(savedInstanceState);
 
         if (savedInstanceState == null) {
@@ -102,26 +101,24 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
                 .addApi(LocationServices.API)
                 .build();
         mGoogleApiClient.connect();
-
-
-        mCurrentPosition = DEFAULT_LOCATION;
+        mLocationRequest.setNumUpdates(1);
         mActivity = this;
+        mPlacesMarker = new ArrayList<Marker>();
 
-        jsonUrl = jsonUrl+mCurrentPosition.latitude+","+mCurrentPosition.longitude+"&radius=5000&type="+mType+"&key="+API_KEY;
-        makeJsonData(jsonUrl);
     }
 
 
 
-    private void makeJsonData(final String url)
+    private void makeJsonData(String url)
     {
-        Log.d("lisa", "makeJsonData : "+url);
+        Log.d("AppLog", "makeJsonData using url : " + url.toString());
 
         URL AsyUrl=null;
         new AsyncTask<String, String, JSONObject>() {
             @Override
             protected JSONObject doInBackground(String... params) {
-                Log.d("lisa", "makeJsonData doInBackground");
+                mMakeJson = true;
+                Log.d("AppLog", "makeJsonData : doInBackground");
                 HttpURLConnection connection = null;
                 BufferedReader reader = null;
 
@@ -145,7 +142,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
 
                 catch(Exception ex)
                 {
-                    Log.e("lisa", "yourDataTask", ex);
+                    Log.e("AppLog", "Error when makeJsonData e: ", ex);
                     return null;
                 }
             }
@@ -153,48 +150,51 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
             @Override
             protected void onPostExecute(JSONObject response)
             {
-                Log.d("lisa", "makeJsonData onPostExecute");
+                Log.d("AppLog", "makeJsonData : onPostExecute");
                 if(response != null)
                 {
                     mJsonObject = response;
                     getPOIInformation();
                     showPoiInformation();
-                    Log.e("lisa", "Success: " + response.toString() );
+                    Log.e("AppLog", "makeJsonData Success: " + response.toString() );
                 }
+                mMakeJson = false;
             }
         }.execute(url);
     }
 
     private  void getPOIInformation()
     {
-        Log.d("lisa", "getPOIInformation");
+        Log.d("AppLog", "getPOIInformation");
         JSONArray photos = null;
 
         String PhotoAPI = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=100&key="+API_KEY+"&photoreference=";
         try {
             JSONArray results = mJsonObject.getJSONArray("results");    //result 가져오기
             for(int i=0; i<results.length(); i++) {
-                name.add(i, results.getJSONObject(i).getString("name"));    //result에서 이름가져오기
-                address.add(i, results.getJSONObject(i).getString("vicinity")); //result에서 주소 가져오기
-                location.add(i, results.getJSONObject(i).getJSONObject("geometry").getJSONObject("location"));  //result에서 위치정보 가져오기
+                mName.add(i, results.getJSONObject(i).getString("name"));    //result에서 이름가져오기
+                mAddress.add(i, results.getJSONObject(i).getString("vicinity")); //result에서 주소 가져오기
+                mLocation.add(i, results.getJSONObject(i).getJSONObject("geometry").getJSONObject("location"));  //result에서 위치정보 가져오기
 
                 if(results.getJSONObject(i).isNull("photos"))   //result에서 photo정보를 가져와서 photo 가져오기
                 {
-                    photoRefer.add(i, null);
+                    mPhotoRefer.add(i, null);
                 }
                 else {
                     photos = results.getJSONObject(i).getJSONArray("photos");
-                    photoRefer.add(i, PhotoAPI + photos.getJSONObject(0).getString("photo_reference"));
+                    mPhotoRefer.add(i, PhotoAPI + photos.getJSONObject(0).getString("photo_reference"));
                 }
             }
         }
         catch (JSONException e){
-            Log.e("lisa", e.toString());
+            Log.e("AppLog", "getPOIInformation error: "+e.toString());
         }
     }
 
-    void setCurrentLocation(Location location)
+    void showCurrentLocation(Location location)
     {
+        Log.d("AppLog", "setCurrentLocation currentLocation: "+ location.toString());
+
         mLastLocation = location;
         if (mCurrentMarker != null) {
             mCurrentMarker.remove();
@@ -205,47 +205,45 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(latLng);
         markerOptions.title("Current Position");
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+//        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
         mCurrentMarker = mGoogleMap.addMarker(markerOptions);
 
         //move map camera
-        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,11));
+        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
+
+
     }
 
     @Override
     public void onMapReady(final GoogleMap map) {
-        Log.d("lisa", "onMapReady");
+        Log.d("AppLog", "onMapReady");
         mGoogleMap = map;
         mMoveMapByUser = false;
-        mCurrentPosition = DEFAULT_LOCATION;
 
         if (mGoogleMap == null) {
             return;
         }
 
         MapsInitializer.initialize(getApplicationContext());
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(DEFAULT_LOCATION);
-        mGoogleMap.moveCamera(cameraUpdate);
-
         getDeviceLocation();
 
         try {
             if (mLocationPermissionGranted) {
-                Log.d("lisa", "Location Permission granted");
+                Log.d("AppLog", "onMapReady: Location Permission granted");
                 mGoogleMap.setMyLocationEnabled(true);
                 mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
                 mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
 
             } else {
-                Log.d("lisa", "location permission not granted");
+                Log.d("AppLog", "onMapReady: location permission not granted");
             }
         } catch (SecurityException e)  {
-            Log.e("Exception: %s", e.getMessage());
+            Log.e("AppLog", "onMapReady error : "+e.getMessage());
         }
     }
 
     private void getDeviceLocation() {
-        Log.d("lisa", "getDeviceLocation");
+        Log.d("AppLog", "getDeviceLocation");
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mLocationPermissionGranted = true;
         } else {
@@ -256,7 +254,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
         if (mLocationPermissionGranted) {
             // Set the map's camera position to the current location of the device.
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mCurrentPosition, 15));
+//            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mCurrentPosition, 15));
         }
     }
 
@@ -264,7 +262,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String permissions[],
                                            @NonNull int[] grantResults) {
-        Log.d("lisa", "onRequestPermissionsResult");
+        Log.d("AppLog", "onRequestPermissionsResult");
         mLocationPermissionGranted = false;
         switch (requestCode) {
             case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
@@ -278,21 +276,25 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     }
     @Override
     public boolean onMyLocationButtonClick(){
-        Log.d("lisa", "onMyLocationButtonClick");
+        Log.d("AppLog", "onMyLocationButtonClick");
         return true;
     }
 
     @Override
     public void onLocationChanged(Location location){
-        Log.d("lisa", "onLocationChanged");
-        setCurrentLocation(location);
+        Log.d("AppLog", "onLocationChanged");
+        mCurrentPosition= location;
+        mJsonURL = DEFAULT_JSON_URL+mCurrentPosition.getLatitude()+","+mCurrentPosition.getLongitude()+"&type="+mType;
+
+        showCurrentLocation(location);
+        makeJsonData(mJsonURL);
     }
 
 
 
     @Override
     public  void onResume() {
-        Log.d("lisa", "onResume");
+        Log.d("AppLog", "onResume");
         super.onResume();
         if(mGoogleApiClient.isConnected()) {
 
@@ -302,7 +304,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
 
     @Override
     protected void onStart() {
-        Log.d("lisa", "onStart");
+        Log.d("AppLog", "onStart");
         if(mGoogleApiClient != null && mGoogleApiClient.isConnected() == false){
             mGoogleApiClient.connect();
         }
@@ -311,7 +313,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
 
     @Override
     protected void onStop() {
-        Log.d("lisa", "onStop");
+        Log.d("AppLog", "onStop");
 
         if ( mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
@@ -322,7 +324,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
 
     @Override
     public void onConnected(Bundle connectionHint) {
-        Log.d("lisa", "onConnected");
+        Log.d("AppLog", "onConnected");
 
         FragmentManager fragmentManager = getFragmentManager();
         MapFragment mapFragment = (MapFragment) fragmentManager
@@ -335,53 +337,59 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.d("lisa", "onConnectionFailed");
+        Log.d("AppLog", "onConnectionFailed");
         Toast.makeText(getApplicationContext(), "connection failed",Toast.LENGTH_SHORT).show();
     }
 
 
     @Override
     public void onConnectionSuspended(int cause) {
-        Log.d("lisa", "onConnectionSuspended");
+        Log.d("AppLog", "onConnectionSuspended");
         Toast.makeText(getApplicationContext(), "connection suspend",Toast.LENGTH_SHORT).show();
 
     }
 
     private void showPoiInformation()
     {
-        Log.d("lisa", "showPoiInformation");
+        Log.d("AppLog", "showPoiInformation");
         if(mPlacesMarker !=null)
         {
-            mPlacesMarker.remove();
+            mPlacesMarker.clear();
         }
 
-        ListView listview = (ListView)findViewById(R.id.listView);
-        ArrayList<ListViewItem> listItem = new ArrayList<ListViewItem>();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ListView listview = (ListView)findViewById(R.id.listView);
+                ArrayList<ListViewItem> listItem = new ArrayList<ListViewItem>();
 
-        for(int i =0; i<name.size(); i++) {
-            try {
-                LatLng latLng = new LatLng(location.get(i).getInt("lat"), location.get(i).getInt("lng"));
+                for(int i =0; i<mName.size(); i++) {
+                    try {
+                        LatLng latLng = new LatLng(mLocation.get(i).getDouble("lat"), mLocation.get(i).getDouble("lng"));
 
-                String nameOfPlace = name.get(i);
-                String addressOfPlace = address.get(i);
-                String photoOfPlace = photoRefer.get(i);
+                        String nameOfPlace = mName.get(i);
+                        String addressOfPlace = mAddress.get(i);
+                        String photoOfPlace = mPhotoRefer.get(i);
 
-                ListViewItem L_item = new ListViewItem(photoOfPlace, nameOfPlace, addressOfPlace);     //리스트에 보일 아이템들을 생성해줍니다.
-                listItem.add(L_item);
+                        ListViewItem L_item = new ListViewItem(photoOfPlace, nameOfPlace, addressOfPlace);     //리스트에 보일 아이템들을 생성해줍니다.
+                        listItem.add(L_item);
 
-                MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.position(latLng);
-                markerOptions.title(nameOfPlace);
-                markerOptions.snippet(addressOfPlace);
-                markerOptions.draggable(true);
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-                mPlacesMarker = mGoogleMap.addMarker(markerOptions);
+                        MarkerOptions markerOptions = new MarkerOptions();
+                        markerOptions.position(latLng);
+                        markerOptions.title(nameOfPlace);
+                        markerOptions.snippet(addressOfPlace);
+                        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                        Marker item = mGoogleMap.addMarker(markerOptions);
+                        mPlacesMarker.add(item);
 
-            } catch (JSONException e) {
-                Log.e("lisa", e.toString());
+                    } catch (JSONException e) {
+                        Log.e("AppLog", e.toString());
+                    }
+                }
+                ListViewAdapter viewAdapter = new ListViewAdapter(mActivity, R.layout.listview_item, listItem);
+                listview.setAdapter(viewAdapter);
             }
-        }
-        ListViewAdapter viewAdapter = new ListViewAdapter(mActivity, R.layout.listview_item, listItem);
-        listview.setAdapter(viewAdapter);
+        });
+
     }
 }
