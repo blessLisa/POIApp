@@ -18,7 +18,7 @@ public class ListViewItem {
     private String mAddress;
     private Bitmap mThumbnailBitmap;
 
-    public Bitmap getmThumbnailBitmap() { return mThumbnailBitmap; }
+    public Bitmap getThumbnailBitmap() { return mThumbnailBitmap; }
 
     public String getName() {
         return mName;
@@ -28,11 +28,12 @@ public class ListViewItem {
         return mAddress;
     }
 
-    public ListViewItem(String thumbnail, String name, String address) {
-        this.mThumbnail = thumbnail;
+    public  String getThumbnail(){ return mThumbnail; }
+
+    public ListViewItem(String photoUrl, String name, String address) {
+        this.mThumbnail = photoUrl;
         this.mName = name;
         this.mAddress = address;
-        getBitmap(mThumbnail);
     }
 
     private void getBitmap(String url) {

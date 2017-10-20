@@ -3,6 +3,7 @@ package com.example.whkang.poiapp;
 
 import android.app.FragmentManager;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -51,6 +52,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     Location mCurrentPosition;
 
     ArrayList<String> mPhotoRefer = new ArrayList<String>();
+    ArrayList<Bitmap> mPhotos = new ArrayList<Bitmap>();
     ArrayList<String> mName = new ArrayList<String>();
     ArrayList<String> mAddress = new ArrayList<String>();
     ArrayList<JSONObject> mLocation = new ArrayList<JSONObject>();
@@ -65,7 +67,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     boolean mMoveMapByUser = true;
     boolean mMakeJson;
     String mType = null;
-
+    Bitmap mBitmap;
     //Google Place URL API
     String DEFAULT_JSON_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?key="+API_KEY+"&radius=5000&location=";
     String mJsonURL;
@@ -151,7 +153,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
                 {
                     mJsonObject = response;
                     getPOIInformation();
-                    showPoiInformation();
+
                     Log.e("AppLog", "makeJsonData Success: " + response.toString() );
                 }
                 mMakeJson = false;
@@ -167,16 +169,16 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
         String PhotoAPI = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=100&key="+API_KEY+"&photoreference=";
         try {
             JSONArray results = mJsonObject.getJSONArray("results");    //result 가져오기
+
             for(int i=0; i<results.length(); i++) {
                 mName.add(i, results.getJSONObject(i).getString("name"));    //result에서 이름가져오기
                 mAddress.add(i, results.getJSONObject(i).getString("vicinity")); //result에서 주소 가져오기
                 mLocation.add(i, results.getJSONObject(i).getJSONObject("geometry").getJSONObject("location"));  //result에서 위치정보 가져오기
 
-                if(results.getJSONObject(i).isNull("photos"))   //result에서 photo정보를 가져와서 photo 가져오기
+                if (results.getJSONObject(i).isNull("photos"))   //result에서 photo정보를 가져와서 photo 가져오기
                 {
                     mPhotoRefer.add(i, null);
-                }
-                else {
+                } else {
                     photos = results.getJSONObject(i).getJSONArray("photos");
                     mPhotoRefer.add(i, PhotoAPI + photos.getJSONObject(0).getString("photo_reference"));
                 }
@@ -361,6 +363,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
                         String nameOfPlace = mName.get(i);
                         String addressOfPlace = mAddress.get(i);
                         String photoOfPlace = mPhotoRefer.get(i);
+//                        Bitmap photoOfSpot = mPhotos.get(i);
 
                         ListViewItem L_item = new ListViewItem(photoOfPlace, nameOfPlace, addressOfPlace);     //리스트에 보일 아이템들을 생성해줍니다.
                         listItem.add(L_item);
