@@ -34,6 +34,7 @@ public class ListViewItem {
         this.mThumbnail = photoUrl;
         this.mName = name;
         this.mAddress = address;
+        getBitmap(photoUrl);
     }
 
     private void getBitmap(String url) {
