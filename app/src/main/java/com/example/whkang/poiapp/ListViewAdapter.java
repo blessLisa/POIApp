@@ -18,7 +18,7 @@ public class ListViewAdapter extends BaseAdapter {
     private  LayoutInflater inflater;
     private ArrayList<ListViewItem> item;
     private int layout;
-//    ImageView thumbnail;
+    ImageView thumbnail;
 //    String thumurl;
 
     public  ListViewAdapter(Context context, int layout, ArrayList<ListViewItem> item){
@@ -86,12 +86,9 @@ public class ListViewAdapter extends BaseAdapter {
 
         ListViewItem listViewItem=item.get(position);
 
-//        thumbnail = (ImageView)convertView.findViewById(R.id.imageview1);
-//        thumurl = listViewItem.getThumbnail();
-//        getBitmap(thumurl);
-//        thumbnail.setImageBitmap(listViewItem.getThumbnailBitmap());
+        thumbnail = (ImageView)convertView.findViewById(R.id.imageview1);
 
-        ImageView thumbnail = (ImageView)convertView.findViewById(R.id.imageview1);
+        thumbnail.setImageBitmap(listViewItem.getThumbnailBitmap());
 
 
         TextView name = (TextView)convertView.findViewById(R.id.textview1);

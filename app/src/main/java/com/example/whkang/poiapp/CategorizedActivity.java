@@ -76,7 +76,9 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
             .setInterval(UPDATE_INTERVAL_MS)
             .setFastestInterval(FASTEST_UPDATE_INTERVAL_MS);
+
     Location mLastLocation;//마지막 location 저장할 변수
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,6 +155,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
                 {
                     mJsonObject = response;
                     getPOIInformation();
+                    showPoiInformation();
 
                     Log.e("AppLog", "makeJsonData Success: " + response.toString() );
                 }
