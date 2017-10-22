@@ -42,26 +42,26 @@ import java.net.URL;
 import java.util.ArrayList;
 
 public class CategorizedActivity extends AppCompatActivity implements GoogleMap.OnMyLocationButtonClickListener, OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,LocationListener{
-
+//implement-->상속은 아니지만 API를 가져다 쓸수 있게 해주는애
     private GoogleMap mGoogleMap;
-    private GoogleApiClient mGoogleApiClient = null;
-    private Marker mCurrentMarker = null;
-    private ArrayList<Marker> mPlacesMarker = null;
+    private GoogleApiClient mGoogleApiClient = null;//구글맵 사용하게 해주는 애
+    private Marker mCurrentMarker = null;//주변장소 마카
+    private ArrayList<Marker> mPlacesMarker = null;//마카 list
     private AppCompatActivity mActivity;
 
-    Location mCurrentPosition;
+    Location mCurrentPosition;//위치값
 
-    ArrayList<String> mPhotoRefer = new ArrayList<String>();
-    ArrayList<Bitmap> mPhotos = new ArrayList<Bitmap>();
-    ArrayList<String> mName = new ArrayList<String>();
-    ArrayList<String> mAddress = new ArrayList<String>();
-    ArrayList<JSONObject> mLocation = new ArrayList<JSONObject>();
-    private String API_KEY = "AIzaSyCydQq4bw68-gd2yqr2AeTL5sQlmxqUma8";
-    JSONObject mJsonObject = new JSONObject();
+    ArrayList<String> mPhotoRefer = new ArrayList<String>();//json에서 정보 빼낸 값 담을 애들
+    ArrayList<Bitmap> mPhotos = new ArrayList<Bitmap>();//실제 사진이 들어있는 배열
+    ArrayList<String> mName = new ArrayList<String>();//장소 이름
+    ArrayList<String> mAddress = new ArrayList<String>();//장소 주소
+    ArrayList<JSONObject> mLocation = new ArrayList<JSONObject>();//각 장소들의 위치
+    private String API_KEY = "AIzaSyCydQq4bw68-gd2yqr2AeTL5sQlmxqUma8";//API키
+    JSONObject mJsonObject = new JSONObject();//jsonobject객체
 
-    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 2002;
-    private static final int UPDATE_INTERVAL_MS = 60000;  // 60초
-    private static final int FASTEST_UPDATE_INTERVAL_MS = 500; // 0.5초
+    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 2002;//위치 허가 번호
+    private static final int UPDATE_INTERVAL_MS = 60000;  // 60초//몇초 주기로 update할 건가
+    private static final int FASTEST_UPDATE_INTERVAL_MS = 500; // 0.5초//얼마나 빠르게 위치 업데이트 할 것인가
 
     boolean mLocationPermissionGranted = false;
     boolean mMoveMapByUser = true;
@@ -69,19 +69,19 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     String mType = null;
     Bitmap mBitmap;
     //Google Place URL API
-    String DEFAULT_JSON_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?key="+API_KEY+"&radius=5000&location=";
+    String DEFAULT_JSON_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?key="+API_KEY+"&radius=5000&location=";//restful API
     String mJsonURL;
 
-    LocationRequest mLocationRequest = new LocationRequest()
+    LocationRequest mLocationRequest = new LocationRequest()//현재 위치 요청하게 하는 애
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
             .setInterval(UPDATE_INTERVAL_MS)
             .setFastestInterval(FASTEST_UPDATE_INTERVAL_MS);
-    Location mLastLocation;
+    Location mLastLocation;//마지막 location 저장할 변수
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d("AppLog", "onCreate");
-        super.onCreate(savedInstanceState);
+        super.onCreate(savedInstanceState);//부모 oncreate호춯
 
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
@@ -92,22 +92,22 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
             }
         }
 
-        setContentView(R.layout.activity_categorized);
+        setContentView(R.layout.activity_categorized);//layout이랑 activity연결
 
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
+        mGoogleApiClient = new GoogleApiClient.Builder(this)//googleapiclient사용하게 해주는 애
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
-        mGoogleApiClient.connect();
-        mLocationRequest.setNumUpdates(1);
+        mGoogleApiClient.connect();//구글맵이랑 서비스 연결
+        mLocationRequest.setNumUpdates(1);//내 위치 물어보기 한번하기
         mActivity = this;
-        mPlacesMarker = new ArrayList<Marker>();
+        mPlacesMarker = new ArrayList<Marker>();//장소 담을 배열 생성
 
     }
 
 
-    private void makeJsonData(String url)
+    private void makeJsonData(String url)//내가 만든함수! restfulapi에서 json data를 가지고 오는 함수
     {
         Log.d("AppLog", "makeJsonData using url : " + url.toString());
 
@@ -161,7 +161,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
         }.execute(url);
     }
 
-    private  void getPOIInformation()
+    private  void getPOIInformation()//가지고 온 json data에서 우리가 필요한 정보를 가지고 오는 애
     {
         Log.d("AppLog", "getPOIInformation");
         JSONArray photos = null;
@@ -189,7 +189,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
         }
     }
 
-    void showCurrentLocation(Location location)
+    void showCurrentLocation(Location location)//현재 내 위치 보여주는 함수
     {
         Log.d("AppLog", "setCurrentLocation currentLocation: "+ location.toString());
 
@@ -211,7 +211,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     }
 
     @Override
-    public void onMapReady(final GoogleMap map) {
+    public void onMapReady(final GoogleMap map) {//맵이 준비되면 호출이 되는 콜백함수
         Log.d("AppLog", "onMapReady");
         mGoogleMap = map;
         mMoveMapByUser = false;
@@ -238,7 +238,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
         }
     }
 
-    private void getDeviceLocation() {
+    private void getDeviceLocation() {//내 위치 가져오는 애
         Log.d("AppLog", "getDeviceLocation");
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mLocationPermissionGranted = true;
@@ -255,7 +255,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String permissions[],
-                                           @NonNull int[] grantResults) {
+                                           @NonNull int[] grantResults) {//위치 정보 사용하시겠습니까?에서 예를 눌렀을때 호출되는 함수
         Log.d("AppLog", "onRequestPermissionsResult");
         mLocationPermissionGranted = false;
         switch (requestCode) {
@@ -268,16 +268,16 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
         }
     }
     @Override
-    public boolean onMyLocationButtonClick(){
+    public boolean onMyLocationButtonClick(){//구글 맵에서 내위치 버튼 클릭했을떄 불리는 함수
         Log.d("AppLog", "onMyLocationButtonClick");
         return true;
     }
 
     @Override
-    public void onLocationChanged(Location location){
+    public void onLocationChanged(Location location){//내 위치 변했을떄 불리는 함수
         Log.d("AppLog", "onLocationChanged");
         mCurrentPosition= location;
-        mJsonURL = DEFAULT_JSON_URL+mCurrentPosition.getLatitude()+","+mCurrentPosition.getLongitude()+"&type="+mType;
+        mJsonURL = DEFAULT_JSON_URL+mCurrentPosition.getLatitude()+","+mCurrentPosition.getLongitude()+"&type="+mType;//전체restfulapi주소
 
         showCurrentLocation(location);
         makeJsonData(mJsonURL);
@@ -286,7 +286,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
 
 
     @Override
-    public  void onResume() {
+    public  void onResume() {//현재 activity에서 전 activity로 넘어갈떄 불리는 함수
         Log.d("AppLog", "onResume");
         super.onResume();
         if(mGoogleApiClient.isConnected()) {
@@ -296,7 +296,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
 
 
     @Override
-    protected void onStart() {
+    protected void onStart() {//앱이 뒤로갔다가 다시 앞으로 갔을떄 실행되는함수
         Log.d("AppLog", "onStart");
         if(mGoogleApiClient != null && mGoogleApiClient.isConnected() == false){
             mGoogleApiClient.connect();
@@ -305,7 +305,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     }
 
     @Override
-    protected void onStop() {
+    protected void onStop() {//앱이 끝나면 불리는 함수
         Log.d("AppLog", "onStop");
 
         if ( mGoogleApiClient.isConnected()) {
@@ -316,10 +316,10 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
 
 
     @Override
-    public void onConnected(Bundle connectionHint) {
+    public void onConnected(Bundle connectionHint) {//googlemap connect성공시 불리는 callback함수
         Log.d("AppLog", "onConnected");
 
-        FragmentManager fragmentManager = getFragmentManager();
+        FragmentManager fragmentManager = getFragmentManager();//구글맵 위치 잡아주고 onmapready 부르기
         MapFragment mapFragment = (MapFragment) fragmentManager
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -329,20 +329,20 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
 
 
     @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
+    public void onConnectionFailed(ConnectionResult connectionResult) {//위의 꺼랑 반대의 경우 불리는 애
         Log.d("AppLog", "onConnectionFailed");
         Toast.makeText(getApplicationContext(), "connection failed",Toast.LENGTH_SHORT).show();
     }
 
 
     @Override
-    public void onConnectionSuspended(int cause) {
+    public void onConnectionSuspended(int cause) {//구글 맵 연결이 멈춰졌을 때 불리는 함수
         Log.d("AppLog", "onConnectionSuspended");
         Toast.makeText(getApplicationContext(), "connection suspend",Toast.LENGTH_SHORT).show();
 
     }
 
-    private void showPoiInformation()
+    private void showPoiInformation()//activity에 모든걸 표현해주는 함수
     {
         Log.d("AppLog", "showPoiInformation");
         if(mPlacesMarker !=null)
