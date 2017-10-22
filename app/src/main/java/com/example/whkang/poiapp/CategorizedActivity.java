@@ -53,7 +53,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     
 
     ArrayList<String> mPhotoRefer = new ArrayList<String>();//json에서 정보 빼낸 값 담을 애들
-    ArrayList<String> mPhotoRefer = new ArrayList<String>();//json에서 정보 빼낸 값 담을 애들zzzzz
+   
     ArrayList<Bitmap> mPhotos = new ArrayList<Bitmap>();//실제 사진이 들어있는 배열
     ArrayList<String> mName = new ArrayList<String>();//장소 이름
     ArrayList<String> mAddress = new ArrayList<String>();//장소 주소
