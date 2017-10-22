@@ -50,7 +50,7 @@ public class CategorizedActivity extends AppCompatActivity implements GoogleMap.
     private AppCompatActivity mActivity;
 
     Location mCurrentPosition;//위치값
-    //git practice
+    
 
     ArrayList<String> mPhotoRefer = new ArrayList<String>();//json에서 정보 빼낸 값 담을 애들
     ArrayList<Bitmap> mPhotos = new ArrayList<Bitmap>();//실제 사진이 들어있는 배열
